@@ -1,19 +1,19 @@
-import {remote} from 'electron';
+import { remote } from 'electron';
 
 /**
  * The console.log levels that will be intercepted.
  * @type {string[]}
  */
 const TARGETED_LEVELS = [
-  'error',
-  'warn',
-  'debug',
-  'info',
-  'log',
-  'groupCollapsed',
-  'group',
-  'groupEnd',
-  'trace'
+    'error',
+    'warn',
+    'debug',
+    'info',
+    'log',
+    'groupCollapsed',
+    'group',
+    'groupEnd',
+    'trace'
 ];
 
 /**
@@ -39,14 +39,14 @@ let windowHandler = null;
  * @param {function} handler - receives log events. Should accept (level, ...args)
  */
 export const registerLogHandler = (handler) => {
-  if (typeof handler !== 'function') {
-    console.error(
-      `Invalid log handler. Expected a function but instead received ${typeof handler}`);
-    return;
-  }
-  bindConsole();
-  bindWindow();
-  handlers.push(handler);
+    if (typeof handler !== 'function') {
+        console.error(
+            `Invalid log handler. Expected a function but instead received ${typeof handler}`);
+        return;
+    }
+    bindConsole();
+    bindWindow();
+    handlers.push(handler);
 };
 
 /**
@@ -55,10 +55,10 @@ export const registerLogHandler = (handler) => {
  * @returns {Function}
  */
 export const createElectronHandler = eventName => (level, ...args) => {
-  remote.app.emit(eventName, {
-    level,
-    args
-  });
+    remote.app.emit(eventName, {
+        level,
+        args
+    });
 };
 
 /**
@@ -66,15 +66,15 @@ export const createElectronHandler = eventName => (level, ...args) => {
  * This can only happen once. Subsequent calls won't do anything.
  */
 function bindWindow() {
-  if (windowHandler === null) {
-    windowHandler = (msg, url, lineNo, columnNo, error) => {
-      hijackLog('error')([
-        msg, url, lineNo, columnNo, error
-      ]);
-      return false;
-    };
-    window.onerror = windowHandler;
-  }
+    if (windowHandler === null) {
+        windowHandler = (msg, url, lineNo, columnNo, error) => {
+            hijackLog('error')([
+                msg, url, lineNo, columnNo, error
+            ]);
+            return false;
+        };
+        window.onerror = windowHandler;
+    }
 }
 
 /**
@@ -83,10 +83,10 @@ function bindWindow() {
  * @returns {Function}
  */
 const hijackLog = level => (...args) => {
-  globalConsole[level](...args);
-  for (const handler of handlers) {
-    handler(...processLog(level, args));
-  }
+    globalConsole[level](...args);
+    for (const handler of handlers) {
+        handler(...processLog(level, args));
+    }
 };
 
 /**
@@ -94,12 +94,12 @@ const hijackLog = level => (...args) => {
  * This can only happen once. Subsequent calls won't do anything.
  */
 function bindConsole() {
-  for (const level of TARGETED_LEVELS) {
-    if (!globalConsole[level]) {
-      globalConsole[level] = console[level];
-      global.console[level] = hijackLog(level);
+    for (const level of TARGETED_LEVELS) {
+        if (!globalConsole[level]) {
+            globalConsole[level] = console[level];
+            global.console[level] = hijackLog(level);
+        }
     }
-  }
 }
 
 /**
@@ -110,17 +110,17 @@ function bindConsole() {
  * @return {array} - {level, timestamp, args}
  */
 function processLog(
-  level, args, stringableLevels = ['info', 'warn', 'error']) {
-  // stringify args if applicable
-  let formattedArgs = args;
-  if (stringableLevels.indexOf(level) > -1) {
-    formattedArgs = stringifyArgs(args);
-  }
+    level, args, stringableLevels = ['info', 'warn', 'error']) {
+    // stringify args if applicable
+    let formattedArgs = args;
+    if (stringableLevels.indexOf(level) > -1) {
+        formattedArgs = stringifyArgs(args);
+    }
 
-  return [
-    level.toUpperCase(),
-    ...formattedArgs
-  ];
+    return [
+        level.toUpperCase(),
+        ...formattedArgs
+    ];
 }
 
 /**
@@ -128,17 +128,17 @@ function processLog(
  * @param {array} args arguments to the logger
  */
 function stringifyArgs(args) {
-  const stringArgs = [];
-  for (const arg of args) {
-    if (typeof arg !== 'string') {
-      try {
-        stringArgs.push(JSON.stringify(arg));
-      } catch (e) {
-        stringArgs.push(`[${typeof arg}]`);
-      }
-    } else {
-      stringArgs.push(arg);
+    const stringArgs = [];
+    for (const arg of args) {
+        if (typeof arg !== 'string') {
+            try {
+                stringArgs.push(JSON.stringify(arg));
+            } catch (e) {
+                stringArgs.push(`[${typeof arg}]`);
+            }
+        } else {
+            stringArgs.push(arg);
+        }
     }
-  }
-  return stringArgs;
+    return stringArgs;
 }

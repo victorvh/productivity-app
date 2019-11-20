@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 
 class Button extends Component {
     constructor(props) {
@@ -11,10 +11,14 @@ class Button extends Component {
 
     }
 
-    
-    render() {
-        return(
 
+    render() {
+        return (
+            <div className="nav-button">
+                {this.props.project_name}
+            </div>
         );
     }
 }
+
+export default Button;
